@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureX Payments - Send</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Tailwind config to define custom colors based on the registration page (Teal/White theme)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-teal': '#14B8A6', // Vibrant Teal background (like login page)
+                        'accent-dark-teal': '#0F766E', // Dark Teal for primary actions/buttons
+                        'primary-red': '#DC2626', // Keep red for warnings/errors/branding
+                        'secondary-red': '#EF4444',
+                        'text-dark': '#1F2937', // Dark text for white cards
+                        'card-bg': '#FFFFFF', // Pure white card background
+                        'section-bg': '#F9FAFB', // Light gray for inner sections
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base styles for the new light theme components */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom button styling (based on the new Teal accent) */
+        .btn-primary {
+            @apply bg-accent-dark-teal text-white hover:bg-teal-800 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+
+        .btn-secondary {
+            @apply bg-gray-200 text-text-dark hover:bg-gray-300 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-sm;
+        }
+
+        .btn-danger {
+            @apply bg-primary-red text-white hover:bg-red-700 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+
+        /* --- UPDATED INPUT STYLE --- */
+        /* Changed border-gray-300 to border-gray-400 for better visibility */
+        .form-input-light {
+            @apply w-full p-2 border border-gray-400 rounded-lg focus:ring-accent-dark-teal focus:border-accent-dark-teal text-text-dark placeholder-gray-400;
+        }
+        /* --- END UPDATE --- */
+
+        .modal-overlay {
+            @apply fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-sm;
+        }
+
+        /* Styling for form labels/inputs specific to this page */
+        .input-group label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+
+    </style>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="bg-primary-teal min-h-screen flex justify-center items-start pt-10 pb-10 font-sans">
+
+<div class="w-full max-w-7xl bg-white rounded-2xl shadow-2xl overflow-hidden my-8 p-0">
+
+    <header class="bg-white p-6 shadow-md border-b border-gray-100 flex justify-between items-center">
+        <h1 class="text-2xl font-bold flex items-center text-text-dark">
+            <img src="logomain1.jpg"
+                 alt="SecureX Payments Logo"
+                 class="h-8 w-auto mr-3 border-2 border-primary-teal rounded-full object-cover"
+                 onerror="this.onerror=null; this.src='https://placehold.co/32x32/14B8A6/ffffff?text=X'"
+            >
+            <span class="text-text-dark">SecureX Wallet</span>
+        </h1>
+        <div id="user-info" class="text-sm text-gray-600 hidden">
+            Logged in as: <span class="font-semibold text-text-dark" id="current-user-name">Loading...</span> (ID: <span id="current-user-id">?</span>)
+            <button id="logout-btn" class="ml-4 text-xs font-medium text-primary-red hover:text-red-700 transition">Log Out</button>
+        </div>
+    </header>
+
+    <main class="p-4 md:p-8">
+
+        <div id="payment-view" class="max-w-xl mx-auto p-4 md:p-6 bg-section-bg rounded-xl shadow-lg hidden">
+
+            <button id="back-to-dashboard-btn" class="flex items-center text-accent-dark-teal hover:text-teal-800 mb-6 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+            </button>
+
+            <section id="send-payment-section" class="bg-white p-6 rounded-xl shadow-inner border border-gray-200">
+                <h2 class="text-2xl font-semibold text-text-dark mb-4 border-b border-gray-200 pb-2">Initiate Secure Payment</h2>
+                <form id="send-form" class="space-y-4">
+
+                    <div class="flex items-end space-x-4 mb-4">
+                        <div class="flex-grow input-group">
+                            <label for="receiverId">Recipient Wallet ID</label>
+                            <input type="number" id="receiverId" class="form-input-light" placeholder="Enter or Scan Receiver User ID" required>
+                            <small class="text-gray-500 mt-1">Ensure the ID is correct. Transactions are irreversible.</small>
+                        </div>
+                        <button type="button" id="scan-qr-btn" class="btn-secondary h-10 px-3 py-1 flex items-center justify-center text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4.852 1.408a1 1 0 00-.707 0L4 8.586V15a1 1 0 001 1h10a1 1 0 001-1V8.586l-2.145-2.178a1 1 0 00-.707 0L10 8.586l-2.145-2.178zM10 10a2 2 0 100 4 2 2 0 000-4z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="amount">Amount (₹)</label>
+                            <input type="number" id="amount" step="0.01" class="form-input-light" placeholder="Amount to send" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="networkFee">Network Fee (Gas)</label>
+                            <input type="number" id="networkFee" step="0.000001" value="0.01" class="form-input-light" required>
+                            <small class="text-gray-500 mt-1">Fee covers blockchain processing.</small>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4 pt-2">
+                        <button type="button" id="cancel-send-btn" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary review-btn">Review Transaction</button>
+                    </div>
+                </form>
+            </section>
+
+        </div>
+    </main>
+
+    <div id="confirmation-modal" class="modal-overlay hidden flex items-center justify-center">
+        <div class="modal-content-lg bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-primary-red mb-4 border-b border-gray-300 pb-2 flex items-center">
+                <span class="mr-2 text-3xl">⚠️</span> CRITICAL WARNING: Review & Confirm
+            </h3>
+
+            <div id="review-details" class="space-y-3 p-4 bg-section-bg rounded-lg text-text-dark">
+            </div>
+
+            <p class="text-primary-red font-semibold mt-6 mb-4 p-3 bg-red-100 border border-primary-red/50 rounded-lg">
+                <span class="font-extrabold block mb-1">THIS ACTION IS IRREVERSIBLE.</span>
+                Blockchain transactions cannot be undone or canceled. Check the Recipient ID carefully.
+            </p>
+
+            <div class="flex justify-end space-x-4 pt-4">
+                <button id="close-modal-btn" class="bg-gray-400 hover:bg-gray-500 text-white font-medium px-4 py-2 rounded-lg transition">
+                    Cancel Transaction
+                </button>
+                <button id="final-confirm-btn" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg flex items-center transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    I Understand, Send Payment
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="scan-modal" class="modal-overlay hidden flex items-center justify-center">
+    <div class="modal-content-lg bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+        <h3 class="text-2xl font-bold text-text-dark mb-4 border-b border-gray-300 pb-2">Scan Recipient QR Code</h3>
+
+        <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+
+        <p id="scan-status" class="text-sm text-primary-red mt-4">Initializing camera...</p>
+
+        <button id="close-scan-modal-btn" class="btn-secondary mt-6 w-full">Cancel Scan</button>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

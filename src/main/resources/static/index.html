@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureX Payments Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        // Tailwind config to define custom colors based on the registration page (Teal/White theme)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-teal': '#14B8A6', // Vibrant Teal background (like login page)
+                        'accent-dark-teal': '#0F766E', // Dark Teal for primary actions/buttons
+                        'primary-red': '#DC2626', // Keep red for warnings/errors/branding
+                        'secondary-red': '#EF4444',
+                        'text-dark': '#1F2937', // Dark text for white cards
+                        'card-bg': '#FFFFFF', // Pure white card background
+                        'section-bg': '#F9FAFB', // Light gray for inner sections
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base styles for the new light theme components */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #14B8A6; /* Ensure background matches primary-teal */
+        }
+
+        /* Custom button styling (based on the new Teal accent) */
+        .btn-primary {
+            @apply bg-accent-dark-teal text-white hover:bg-teal-800 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+
+        /* --- UPDATED BUTTON STYLE for visibility --- */
+        /* Change btn-secondary to use a transparent background and dark text for contrast on white modal background */
+        .btn-secondary {
+            @apply bg-transparent text-text-dark hover:bg-gray-100 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 border border-transparent hover:border-gray-200; /* Removed shadow-sm and added border for hover effect */
+        }
+        /* ------------------------------------------- */
+
+        .btn-warning {
+            @apply bg-primary-red text-white hover:bg-red-700 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+
+        .btn-danger {
+            @apply bg-primary-red text-white hover:bg-red-700 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+
+        .form-input-light {
+            @apply w-full p-2 border border-gray-400 rounded-lg focus:ring-accent-dark-teal focus:border-accent-dark-teal text-text-dark placeholder-gray-400;
+        }
+
+        /* Modal overlay ensures fixed, full-screen coverage */
+        .modal-overlay {
+            @apply fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center; /* Centering added */
+        }
+
+        /* Modal content should use the light theme */
+        .modal-content-lg {
+            @apply bg-white text-text-dark rounded-xl shadow-2xl;
+        }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="min-h-screen font-sans">
+<div class="container mx-auto p-4 md:p-8">
+    <div id="secure-dashboard-card" class="bg-card-bg p-4 md:p-10 rounded-2xl shadow-2xl">
+
+        <header class="bg-card-bg p-0 shadow-none border-b border-gray-100 flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold flex items-center text-text-dark">
+                <img src="loginmain.jpg"
+                     alt="SecureX Payments Logo"
+                     class="h-8 w-auto mr-3 border-2 border-primary-teal rounded-full object-cover"
+                     onerror="this.onerror=null; this.src='https://placehold.co/32x32/14B8A6/ffffff?text=X'"
+                >
+                <span class="text-text-dark">SecureX Wallet</span>
+            </h1>
+            <div id="user-info" class="text-sm text-gray-600 hidden flex items-center space-x-4">
+
+                <a href="profile.html" class="p-2 rounded-full hover:bg-gray-100 transition text-text-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <span>
+                    Logged in as: <span class="font-semibold text-text-dark" id="current-user-name">Loading...</span> (ID: <span id="current-user-id">?</span>)
+                </span>
+                <button id="logout-btn" class="ml-4 text-xs font-medium text-primary-red hover:text-red-700 transition">Log Out</button>
+            </div>
+        </header>
+
+        <div id="secure-dashboard-wrapper" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="lg:col-span-2 space-y-6">
+
+                <section id="dashboard" class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+                    <h2 class="text-xl font-semibold text-text-dark mb-4">Current Balance</h2>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Available Funds (After Fees)</p>
+                            <p class="text-4xl font-extrabold text-text-dark mt-1">₹<span id="user-balance">0.00</span></p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="show-receive-btn" class="btn-secondary flex items-center shadow-md text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Receive
+                            </button>
+                            <button id="show-send-btn" class="btn-primary flex items-center shadow-md text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 00.149 1.451.998.998 0 001.352-.149L10 12.872l5.443 3.484a.998.998 0 001.352.149 1 1 0 00.149-1.451l-7-14z" />
+                                </svg>
+                                Send Payment
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="quick-access-section" class="bg-section-bg p-6 pt-0 rounded-xl shadow-inner">
+                    <div id="quick-actions-bar" class="flex justify-around items-start text-center pt-4">
+
+                        <a href="#" class="cursor-pointer hover:text-accent-dark-teal transition block w-1/4" onclick="return false;">
+                            <div class="p-3 bg-white border border-gray-200 rounded-xl mx-auto mb-1 text-text-dark shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M11.493 5.405a1 1 0 010 1.19L8.405 9.873a1 1 0 01-1.618-.724V5.405a1 1 0 011.618-.724l3.088 3.368zM10 18a8 8 0 100-16 8 8 0 000 16zm-5-8a5 5 0 1110 0 5 5 0 01-10 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-xs text-gray-600">Scan QR Code</div>
+                        </a>
+
+                        <a href="#" class="cursor-pointer hover:text-accent-dark-teal transition block w-1/4" onclick="return false;">
+                            <div class="p-3 bg-white border border-gray-200 rounded-xl mx-auto mb-1 text-text-dark shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 00.149 1.451.998.998 0 001.352-.149L10 12.872l5.443 3.484a.998.998 0 001.352.149 1 1 0 00.149-1.451l-7-14z" />
+                                </svg>
+                            </div>
+                            <div class="text-xs text-gray-600">Pay Anyone</div>
+                        </a>
+
+                        <a href="stock.html" class="cursor-pointer hover:text-accent-dark-teal transition block w-1/4">
+                            <div class="p-3 bg-white border border-gray-200 rounded-xl mx-auto mb-1 text-text-dark shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                            </div>
+                            <div class="text-xs text-gray-600">View Market</div>
+                        </a>
+                        <div class="cursor-not-allowed opacity-50 text-center block w-1/4">
+                            <div class="p-3 bg-white border border-gray-200 rounded-xl mx-auto mb-1 text-gray-400 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM5 9a1 1 0 112 0 1 1 0 01-2 0zm11 0a1 1 0 11-2 0 1 1 0 012 0zm-7 3a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-xs text-gray-400">Services</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="people-contacts-section" class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+                    <h2 class="text-xl font-semibold text-text-dark mb-4">People</h2>
+                    <div id="quick-pay-contacts" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                    </div>
+                </section>
+
+                <section id="history" class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-text-dark">Transaction History</h2>
+                        <button class="btn-secondary text-sm" onclick="getTransactions()">🔄 Refresh</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-300" id="transactionsTable">
+                            <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Time</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">To/From</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Amount (₹)</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Fee</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Transparency</th>
+                            </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="transactions-tbody">
+                            <tr><td colspan="6" class="text-center py-4 text-gray-500">Loading transactions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <section class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+                    <h2 class="text-xl font-semibold text-text-dark mb-4">Blockchain & Mining</h2>
+
+                    <div class="mb-4 p-4 bg-primary-red/10 rounded-lg border border-primary-red/30">
+                        <h5 class="font-medium text-lg text-primary-red mb-2 flex items-center">
+                            <span class="mr-2">⛏️</span> Network Operations
+                        </h5>
+                        <p class="text-sm text-gray-600 mb-3">Transactions are only confirmed after mining.</p>
+                        <button class="btn-warning w-full" onclick="mineBlock()">Mine Pending Transactions</button>
+                    </div>
+
+                    <div class="mt-6 border-t border-gray-200 pt-4">
+                        <button class="w-full text-left font-medium text-gray-600 hover:text-text-dark transition"
+                                onclick="toggleAdminPanel()">
+                            Advanced Admin Tools (Show/Hide)
+                        </button>
+                        <div id="admin-panel" class="space-y-4 mt-4 hidden">
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <h5 class="font-medium mb-2 text-text-dark">Create Test User</h5>
+                                <div class="space-y-2">
+                                    <input id="userName" class="form-input-light" placeholder="Name" />
+                                    <input id="userEmail" class="form-input-light" placeholder="Email" />
+                                    <input id="userBalance" class="form-input-light" placeholder="Balance" type="number" />
+                                    <button class="btn-primary w-full" onclick="createUser()">Create User</button>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-medium text-text-dark">All Users (IDs)</h5>
+                                    <button class="btn-secondary text-xs" onclick="getUsers()">Refresh</button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200" id="usersTable">
+                                        <thead class="bg-gray-100 text-text-dark"><tr><th>ID</th><th>Name</th><th>Balance (₹)</th><th>Actions</th></tr></thead>
+                                        <tbody class="text-gray-600"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-medium text-text-dark">Raw Blockchain Data</h5>
+                                    <button class="btn-secondary text-xs" onclick="getBlockchain()">Refresh</button>
+                                </div>
+                                <pre id="blockchain" class="text-xs text-gray-600 overflow-x-auto p-2 bg-gray-50 rounded-lg"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="confirmation-modal" class="modal-overlay hidden">
+    <div class="modal-content-lg p-8 rounded-xl shadow-2xl w-full max-w-lg">
+        <h3 class="text-2xl font-bold text-primary-red mb-4 border-b border-gray-300 pb-2 flex items-center">
+            <span class="mr-2 text-3xl">⚠️</span> CRITICAL WARNING: Review & Confirm
+        </h3>
+
+        <div id="review-details" class="space-y-3 p-4 bg-section-bg rounded-lg text-text-dark">
+        </div>
+
+        <p class="text-primary-red font-semibold mt-6 mb-4 p-3 bg-red-100 border border-primary-red/50 rounded-lg">
+            <span class="font-extrabold block mb-1">THIS ACTION IS IRREVERSIBLE.</span>
+            Blockchain transactions cannot be undone or canceled. Check the Recipient ID carefully.
+        </p>
+
+        <div class="flex justify-end space-x-4 pt-4">
+            <button id="close-modal-btn" class="btn-secondary">Cancel Transaction</button>
+            <button id="final-confirm-btn" class="btn-danger flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                I Understand, Send Payment
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="receive-modal" class="modal-overlay hidden">
+    <div class="modal-content-lg p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+        <h3 class="text-2xl font-bold text-text-dark mb-6">Receive Funds via QR Code</h3>
+
+        <p class="text-sm text-gray-600 mb-4">Scan this code to send funds to <span id="receive-user-name" class="font-semibold"></span> (ID: <span id="receive-user-id" class="font-semibold"></span>).</p>
+
+        <div id="qrcode-container" class="p-4 inline-block border-4 border-accent-dark-teal rounded-lg mb-6 bg-white"></div>
+
+        <p class="text-sm text-primary-red font-medium">Recipient ID is permanent and safe to share.</p>
+
+        <button id="close-receive-modal-btn" class="btn-secondary mt-6 w-full">Close</button>
+    </div>
+</div>
+
+<div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal-content-lg p-6 rounded-xl shadow-2xl w-full max-w-lg relative">
+
+        <button id="close-profile-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-text-dark transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div class="text-center mb-6">
+            <div id="profile-avatar" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-3xl text-white shadow-lg"
+                 style="background-color: #0F766E;">
+                M
+            </div>
+            <h3 id="profile-name" class="text-2xl font-bold text-text-dark">Charan Naidu</h3>
+            <p class="text-sm text-gray-600">ID: <span id="profile-id">123</span></p>
+        </div>
+
+        <div class="flex justify-around space-x-4 mb-6">
+            <button id="profile-pay-btn" data-recipient-id="0" class="btn-primary w-full py-3 flex items-center justify-center text-lg">
+                Pay
+            </button>
+        </div>
+
+        <div class="text-center mb-4">
+            <button id="profile-history-btn" data-recipient-id="0" class="text-accent-dark-teal hover:text-teal-800 transition text-sm font-medium">
+                View Transaction History
+            </button>
+        </div>
+
+        <div id="profile-history-container" class="max-h-64 overflow-y-auto p-4 bg-section-bg rounded-lg">
+            <p class="text-gray-500 text-center py-4">Click 'View Transaction History' above to see past payments.</p>
+        </div>
+
+    </div>
+</div>
+
+
+<script src="app.js"></script>
+</body>
+</html>

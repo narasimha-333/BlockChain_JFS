@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureX Wallet - Create New User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sx-blue-dark': '#0056b3',
+                        'sx-blue-medium': '#007bff',
+                        'sx-green-dark': '#007062',
+                        'sx-green-medium': '#00a389', // Body Background
+                        'sx-gray-medium': '#adb5bd',
+                        'sx-yellow': '#ffc107',
+                        'sx-door-teal': '#2F859F', // Button color
+                        'sx-teal-panel': '#009696', // New background color for the left info panel
+                        'sx-text-dark': '#212529',
+                        'primary-dark': '#1A1A1A',
+                        'secondary-red': '#EF4444',
+                        'text-light': '#F3F4F6',
+                        'dark-gray': '#1f2937',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Essential styles for custom classes (since style.css is external) */
+        .form-input-sx {
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            width: 100%;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-input-sx:focus {
+            border-color: #009696;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 150, 150, 0.25);
+        }
+
+        .btn-primary-sx {
+            background-color: #2F859F; /* sx-door-teal */
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.15s ease-in-out;
+            cursor: pointer;
+        }
+
+        .btn-primary-sx:hover {
+            background-color: #1e6d83; /* Darker shade of sx-door-teal */
+        }
+        /* Custom Checkbox Color */
+        .form-checkbox {
+            color: #2F859F; /* Sets the checkmark color */
+        }
+    </style>
+</head>
+
+<body class="bg-sx-green-medium min-h-screen font-sans flex items-center justify-center p-4">
+
+<main class="container p-4 md:p-8 flex items-center justify-center w-full">
+
+    <section id="create-user-panel" class="max-w-5xl w-full bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+
+        <div class="w-full md:w-1/2 bg-sx-teal-panel text-white p-12 flex flex-col justify-between relative">
+
+            <button id="back-to-login-btn" class="flex items-center text-white hover:text-sx-yellow transition z-10 mb-4 self-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Login
+            </button>
+
+            <div class="flex-grow flex flex-col justify-center py-8">
+                <h2 class="text-3xl font-bold mb-4">SECURE WALLET SETUP</h2>
+                <p class="text-sm opacity-90 mb-6">
+                    Start your secure payment journey instantly. Creating a test wallet allows you to simulate blockchain transactions and learn how the system works.
+                </p>
+
+                <p class="text-sm font-semibold mt-4">
+                    NOTE: Your User ID will be your permanent, unique wallet identifier.
+                </p>
+            </div>
+
+            <div class="flex items-center mt-8 self-start">
+                <p class="text-2xl font-semibold opacity-90">SecureX</p>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 bg-white p-12 flex flex-col justify-center">
+
+            <div class="flex flex-col space-y-6 w-full">
+
+                <h3 class="text-sx-text-dark text-2xl font-bold text-left">CREATE WALLET FORM</h3>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="createUserName" class="block text-sm font-medium text-sx-text-dark mb-1">Full Name</label>
+                            <input id="createUserName" class="form-input-sx" placeholder="Full Name" required />
+                        </div>
+                        <div class="input-group">
+                            <label for="createUserEmail" class="block text-sm font-medium text-sx-text-dark mb-1">Email Address (Optional)</label>
+                            <input id="createUserEmail" class="form-input-sx" placeholder="Email (Optional)" />
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="createUserBalance" class="block text-sm font-medium text-sx-text-dark mb-1">Initial Balance</label>
+                        <input id="createUserBalance" class="form-input-sx w-full" placeholder="500" type="number" value="500" />
+                    </div>
+                </div>
+
+                <div class="flex items-center text-sx-text-dark text-sm mt-4">
+                    <input id="terms-agree" type="checkbox" checked class="form-checkbox h-4 w-4 border-gray-300 rounded mr-2">
+                    <label for="terms-agree">
+                        I agree to the <span class="text-sx-blue-medium font-medium cursor-pointer hover:underline">Terms and Conditions</span>
+                    </label>
+                </div>
+
+                <button id="createUserBtn" class="btn-primary-sx w-full p-3 flex justify-center items-center mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    Create Wallet & Log In
+                </button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

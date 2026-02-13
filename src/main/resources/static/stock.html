@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureX Market Watch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Use the same Tailwind config for theme consistency
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-teal': '#14B8A6',
+                        'accent-dark-teal': '#0F766E',
+                        'primary-red': '#DC2626',
+                        'secondary-red': '#EF4444',
+                        'text-dark': '#1F2937',
+                        'card-bg': '#FFFFFF',
+                        'section-bg': '#F9FAFB',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #14B8A6;
+        }
+        .btn-primary {
+            @apply bg-accent-dark-teal text-white hover:bg-teal-800 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 shadow-md;
+        }
+        .btn-secondary {
+            @apply bg-transparent text-text-dark hover:bg-gray-100 transition duration-150 ease-in-out font-medium rounded-lg px-4 py-2 border border-transparent hover:border-gray-200;
+        }
+        .form-input-light {
+            @apply w-full p-2 border border-gray-400 rounded-lg focus:ring-accent-dark-teal focus:border-accent-dark-teal text-text-dark placeholder-gray-400;
+        }
+        .modal-overlay {
+            @apply fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center;
+        }
+        .modal-content-lg {
+            @apply bg-white text-text-dark rounded-xl shadow-2xl;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex justify-center items-start pt-10 pb-10 font-sans">
+
+<div class="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden my-8 p-0">
+
+    <header class="bg-white p-6 shadow-md border-b border-gray-100 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <a href="index.html" class="text-gray-600 hover:text-accent-dark-teal transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-text-dark">Market & Investments</h1>
+        </div>
+
+        <div id="user-info" class="text-sm text-gray-600 hidden">
+            Logged in as: <span class="font-semibold text-text-dark" id="current-user-name">Loading...</span> (ID: <span id="current-user-id">?</span>)
+        </div>
+    </header>
+
+    <main class="p-4 md:p-8 space-y-6">
+
+        <section id="stock-search-section" class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+            <h2 class="text-xl font-semibold text-text-dark mb-4">Stock Lookup (Find Tickers)</h2>
+
+            <div class="flex space-x-3">
+                <input type="text" id="stock-search-input" class="form-input-light flex-grow" placeholder="Enter company name or ticker (e.g., GOOGL)" required>
+                <button id="search-stock-btn" class="btn-primary flex-shrink-0">Search</button>
+            </div>
+
+            <div id="stock-search-results" class="mt-4 space-y-2 max-h-48 overflow-y-auto">
+                <p class="text-sm text-gray-500" id="search-status">Enter a keyword and click 'Search' to find symbols.</p>
+            </div>
+        </section>
+
+        <section id="market-watch" class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-text-dark">Featured Watchlist</h2>
+                <button id="refresh-stock-btn" class="btn-secondary text-sm">🔄 Refresh</button>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-bold text-text-dark">Apple Inc. (AAPL)</p>
+                    <p class="text-sm text-gray-500">Last Price (Delayed/Cached)</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-3xl font-extrabold text-accent-dark-teal">
+                        $<span id="aapl-price">...</span>
+                    </p>
+                    <p class="text-sm text-gray-500" id="aapl-status"></p>
+                </div>
+            </div>
+
+            <p class="text-sm text-gray-500 mt-4 text-center">Note: Price data is delayed/cached due to free API tier restrictions.</p>
+        </section>
+
+        <section class="bg-section-bg p-6 rounded-xl shadow-inner border border-gray-100 opacity-60 cursor-not-allowed">
+            <h2 class="text-xl font-semibold text-text-dark mb-4">Investment Portfolio (Coming Soon)</h2>
+            <p class="text-gray-500">Integrate real trades here using brokerage APIs.</p>
+        </section>
+
+    </main>
+
+</div>
+
+<div id="chart-modal" class="modal-overlay hidden">
+    <div class="modal-content-lg p-6 rounded-xl shadow-2xl w-full max-w-4xl text-center">
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-2xl font-bold text-text-dark" id="chart-title">Stock Price History</h3>
+            <button id="close-chart-modal-btn" class="text-gray-400 hover:text-text-dark transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-4 bg-white border border-gray-200 rounded-lg">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-3">Data source: Alpha Vantage (last 100 days, daily adjusted close).</p>
+    </div>
+</div>
+
+
+<script src="app.js"></script>
+<script>
+    // Specific logic to run only on stock.html load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Since app.js handles the routing (handleLoadBasedOnPath), we only need
+        // to manually ensure the stock-specific fetch functions run here,
+        // as they were removed from handleDashboardLoad.
+
+        // Ensure user info and stock data is loaded immediately
+        loadAllUsersAndSetUserInfo();
+        fetchStockData();
+
+        // Set up local event listeners for this page
+        const refreshStockBtn = document.getElementById('refresh-stock-btn');
+        if (refreshStockBtn) refreshStockBtn.addEventListener('click', fetchStockData);
+
+        const searchStockBtn = document.getElementById('search-stock-btn');
+        if (searchStockBtn) searchStockBtn.addEventListener('click', handleStockSearch);
+
+        const closeChartModalBtn = document.getElementById('close-chart-modal-btn');
+        if (closeChartModalBtn) closeChartModalBtn.addEventListener('click', () => {
+            document.getElementById('chart-modal')?.classList.add('hidden');
+        });
+    });
+</script>
+</body>
+</html>

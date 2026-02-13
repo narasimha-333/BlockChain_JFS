@@ -1,0 +1,138 @@
+/* General Body and Typography */
+body {
+    font-family: 'Inter', sans-serif;
+    color: #212529; /* sx-text-dark (General dark text color) */
+}
+
+/* ------------------------------------------------------------------- */
+/* 1. Login.html (Light Theme) Styles */
+/* ------------------------------------------------------------------- */
+
+/* Custom Form Elements */
+.form-input-sx, .form-select-sx {
+    @apply w-full p-3 border border-gray-300 rounded-md transition duration-200 ease-in-out;
+    color: #212529;
+    background-color: #ffffff;
+}
+
+/* Custom Focus Styles for Light Inputs (CRITICAL CHANGE HERE) */
+.form-input-sx:focus, .form-select-sx:focus {
+    outline: none;
+    /* Use the dark blue color (#24426E) for the focus ring and border color */
+    border-color: #24426E;
+    box-shadow: 0 0 0 2px #24426E;
+}
+
+
+.form-input-sx::placeholder {
+    color: #9ca3af; /* gray-400 */
+}
+
+.form-input-sx:disabled, .form-select-sx:disabled {
+    background-color: #f3f4f6; /* gray-100 */
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+/* Custom Button Styles (Login page) */
+.btn-primary-sx {
+    @apply px-6 py-3 rounded-md font-semibold text-white transition duration-200 ease-in-out;
+    background-color: #2F859F; /* Dark Teal - sx-door-teal */
+    border: 1px solid #2F859F;
+}
+
+.btn-primary-sx:hover {
+    background-color: #266E83;
+    border-color: #266E83;
+}
+
+.btn-primary-sx:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #2F859F;
+    border-color: #2F859F;
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. Dashboard/Admin (Dark Theme) Styles */
+/* ------------------------------------------------------------------- */
+
+/* Standard Application Buttons */
+.btn-primary {
+    @apply bg-sx-green-medium text-white font-semibold py-2 px-4 rounded-lg hover:bg-sx-green-dark transition-colors duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200;
+}
+
+.btn-warning {
+    @apply bg-sx-yellow text-sx-text-dark font-semibold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors duration-200;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-200;
+}
+
+/* Form inputs for dashboard/admin pages - Updated focus to new dark blue */
+.form-input,
+.form-input-dark {
+    @apply w-full p-2 text-white border rounded-md transition duration-200;
+    background-color: #374151; /* gray-700 */
+    border-color: #4b5563;    /* gray-600 */
+}
+
+.form-input:focus, .form-input-dark:focus {
+    /* Applying new dark blue focus directly */
+    border-color: #24426E;
+    box-shadow: 0 0 0 2px #24426E;
+}
+
+.form-input-dark {
+    background-color: #1f2937; /* dark-gray */
+    border-color: #374151;
+}
+
+.input-group label {
+    @apply block text-sm font-medium text-gray-300 mb-1;
+}
+
+
+/* ------------------------------------------------------------------- */
+/* 3. Modal Overlays (FIXED CENTERING) */
+/* ------------------------------------------------------------------- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    background-color: rgba(0, 0, 0, 0.75);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-content-lg {
+    @apply relative p-6 rounded-lg shadow-xl transform transition-all sm:w-full sm:max-w-lg;
+    background-color: #1f2937; /* dark-gray */
+    color: #f3f4f6; /* text-light */
+}
+
+/* ------------------------------------------------------------------- */
+/* 4. Utilities and Layout */
+/* ------------------------------------------------------------------- */
+
+/* Pre-formatted block data display */
+pre {
+    @apply bg-gray-900 text-green-400 p-3 rounded-lg overflow-auto text-xs whitespace-pre-wrap;
+    max-height: 200px;
+}
+
+.container {
+    @apply mx-auto;
+}
